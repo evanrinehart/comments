@@ -13,7 +13,7 @@ end
 
 if !File.exists? "email_logs.db"
   email_logs = SQLite3::Database.new "email_logs.db"
-  email_logs.execute("CREATE TABLE email_logs (dest TEXT, secret TEXT, status TEXT, error TEXT);")
+  email_logs.execute("CREATE TABLE email_logs (dest TEXT, secret TEXT, status TEXT, error TEXT, timestamp TEXT);")
   email_logs.close
 end
 
@@ -56,8 +56,8 @@ post '/comments' do
     Thread.new do
       logs = SQLite3::Database.new "email_logs.db"
       logs.execute(
-        "insert into email_logs (dest,secret,status) values (?,?,?)",
-        [email, secret, 'sending']
+        "insert into email_logs (dest,secret,status,timestamp) values (?,?,?,?)",
+        [email, secret, 'sending', timestamp]
       )
       row_id = logs.last_insert_row_id
       begin
@@ -83,17 +83,17 @@ If you think this email was sent to you in error please ignore it.
 EOT
         )
       rescue => e
-        email_logs.execute(
+        logs.execute(
           "update email_logs set status='error', error=? where rowid=?",
           [e.inspect, row_id]
         )
       else
-        email_logs.execute(
+        logs.execute(
           "update email_logs set status='complete' where rowid=?",
           [row_id]
         )
       ensure
-        email_logs.close
+        logs.close
       end
     end
     return "Look for an email to confirm your comment"
