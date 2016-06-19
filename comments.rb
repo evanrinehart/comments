@@ -44,7 +44,7 @@ post '/comments' do
     timestamp = Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")
     secret = SecureRandom.hex
     db.execute(
-      "insert into comments (blog_key, timestamp,email,body,post_key,name,secret,visible) values (?,?,?,?,?,?,0)",
+      "insert into comments (blog_key, timestamp,email,body,post_key,name,secret,visible) values (?,?,?,?,?,?,?,0)",
       [blog_key, timestamp, email, body, post_key, name, secret]
     )
     Pony.mail(
