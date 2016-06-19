@@ -51,7 +51,7 @@ post '/comments' do
       :to => email,
       :from => ENV['COMMENTS_FROM_ADDRESS'],
       :subject => "Please confirm your submitted blog comment",
-      :body => <<-EOT
+      :html_body => <<-EOT
 <p>Greetings from the Ad Hoc Blog Comment System,</p>
 
 <p>
