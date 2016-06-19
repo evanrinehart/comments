@@ -8,7 +8,7 @@ if File.exists? "comments.db"
   db = SQLite3::Database.new "comments.db"
 else
   db = SQLite3::Database.new "comments.db"
-  db.execute("CREATE TABLE comments (id ROWID, post_key TEXT, email TEXT, name TEXT, body TEXT, timestamp TEXT, secret TEXT, visible INTEGER, blog_key TEXT);")
+  db.execute("CREATE TABLE comments (post_key TEXT, email TEXT, name TEXT, body TEXT, timestamp TEXT, secret TEXT, visible INTEGER, blog_key TEXT);")
 end
 
 set :bind, '0.0.0.0'
