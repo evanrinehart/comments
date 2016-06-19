@@ -13,7 +13,7 @@ end
 
 if !File.exists? "email_logs.db"
   email_logs = SQLite3::Database.new "email_logs.db"
-  email_logs.execute("CREATE TABLE email_log (to TEXT, secret TEXT, status TEXT, error TEXT);")
+  email_logs.execute("CREATE TABLE email_log (dest TEXT, secret TEXT, status TEXT, error TEXT);")
   email_logs.close
 end
 
@@ -56,7 +56,7 @@ post '/comments' do
     Thread.new do
       logs = SQLite3::Database.new "email_logs.db"
       logs.execute(
-        "insert into email_logs (to,secret,status) values (?,?,?)",
+        "insert into email_logs (dest,secret,status) values (?,?,?)",
         [email, secret, 'sending']
       )
       row_id = logs.last_insert_row_id
