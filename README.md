@@ -7,13 +7,12 @@ email=user@example.com&
 name=User+Jones&
 blog_key=this-blog's-name&
 post_key=this-post's-title&
-post_key=this-post's-title&
 body=This is a comment.
 ```
 
-to wherever this sinatra web server is running. It should respond immedaitely
+to wherever this sinatra web server is running. It should respond immediately
 with a message like "Check your email to confirm your comment." The email
-will container a disclaimer and a button which posts a secret key to the same
+will contain a disclaimer and a button which posts a secret key to the same
 url. Posting the secret will make the previously submitted comment visible.
 
 Visible to what? Do a GET with the path
