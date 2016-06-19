@@ -26,3 +26,9 @@ your domain.
 
 The comments are stored in an SQLite database that is created on startup
 if it doesn't exist.
+
+You need to set some env vars before running comments.rb.
+
+- COMMENTS_PORT is the port to run the server on.
+- COMMENTS_FROM_ADDRESS is the from address used in the confirmation email.
+- COMMENTS_CALLBACK_URL is the url the email will post back to, up to the /comments part.
