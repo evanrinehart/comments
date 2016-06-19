@@ -13,7 +13,7 @@ end
 
 if !File.exists? "email_logs.db"
   email_logs = SQLite3::Database.new "email_logs.db"
-  email_logs.execute("CREATE TABLE email_log (dest TEXT, secret TEXT, status TEXT, error TEXT);")
+  email_logs.execute("CREATE TABLE email_logs (dest TEXT, secret TEXT, status TEXT, error TEXT);")
   email_logs.close
 end
 
