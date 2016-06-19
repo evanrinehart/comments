@@ -14,7 +14,7 @@ end
 set :bind, '0.0.0.0'
 set :port, ENV['COMMENTS_PORT']
 
-get '/comments/:blog/:post_key' do
+get '/comments/:blog_key/:post_key' do
   blog_key = params[:blog_key]
   post_key = params[:post_key]
   results = []
