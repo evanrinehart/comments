@@ -11,6 +11,12 @@ else
   db.execute("CREATE TABLE comments (post_key TEXT, email TEXT, name TEXT, body TEXT, timestamp TEXT, secret TEXT, visible INTEGER, blog_key TEXT);")
 end
 
+if !File.exists? "email_logs.db"
+  email_logs = SQLite3::Database.new "email_logs.db"
+  email_logs.execute("CREATE TABLE email_log (to TEXT, secret TEXT, status TEXT, error TEXT);")
+  email_logs.close
+end
+
 set :bind, '0.0.0.0'
 set :port, ENV['COMMENTS_PORT']
 
@@ -47,11 +53,19 @@ post '/comments' do
       "insert into comments (blog_key, timestamp,email,body,post_key,name,secret,visible) values (?,?,?,?,?,?,?,0)",
       [blog_key, timestamp, email, body, post_key, name, secret]
     )
-    Pony.mail(
-      :to => email,
-      :from => ENV['COMMENTS_FROM_ADDRESS'],
-      :subject => "Please confirm your submitted blog comment",
-      :html_body => <<-EOT
+    Thread.new do
+      logs = SQLite3::Database.new "email_logs.db"
+      logs.execute(
+        "insert into email_logs (to,secret,status) values (?,?,?)",
+        [email, secret, 'sending']
+      )
+      row_id = logs.last_insert_row_id
+      begin
+        Pony.mail(
+          :to => email,
+          :from => ENV['COMMENTS_FROM_ADDRESS'],
+          :subject => "Please confirm your submitted blog comment",
+          :html_body => <<-EOT
 <p>Greetings from the Ad Hoc Blog Comment System,</p>
 
 <p>
@@ -67,7 +81,21 @@ If you think this email was sent to you in error please ignore it.
 <button type="submit" name="secret" value="#{secret}">Confirm Comment</button>
 </form>
 EOT
-    )
+        )
+      rescue => e
+        email_logs.execute(
+          "update email_logs set status='error', error=? where rowid=?",
+          [e.inspect, row_id]
+        )
+      else
+        email_logs.execute(
+          "update email_logs set status='complete' where rowid=?",
+          [row_id]
+        )
+      ensure
+        email_logs.close
+      end
+    end
     return "Look for an email to confirm your comment"
   end
 end
