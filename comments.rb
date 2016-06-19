@@ -18,11 +18,11 @@ get '/comments/:blog_key/:post_key' do
   blog_key = params[:blog_key]
   post_key = params[:post_key]
   results = []
-  db.execute("select * from comments where blog_key = ? and post_key = ? and visible = 1 order by timestamp", [blog_key, post_key]) do |row|
+  db.execute("select name, timestamp, body from comments where blog_key = ? and post_key = ? and visible = 1 order by timestamp", [blog_key, post_key]) do |row|
     results.push({
-      :name => row[3],
-      :timestamp => row[5],
-      :body => row[4]
+      :name => row[0],
+      :timestamp => row[1],
+      :body => row[2]
     })
   end
   return JSON.generate(results)
