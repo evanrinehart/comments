@@ -8,17 +8,17 @@ if File.exists? "comments.db"
   db = SQLite3::Database.new "comments.db"
 else
   db = SQLite3::Database.new "comments.db"
-  db.execute("CREATE TABLE comments (id ROWID, post_key TEXT, email TEXT, name TEXT, body TEXT, timestamp TEXT, secret TEXT, visible INTEGER, blog TEXT);")
+  db.execute("CREATE TABLE comments (id ROWID, post_key TEXT, email TEXT, name TEXT, body TEXT, timestamp TEXT, secret TEXT, visible INTEGER, blog_key TEXT);")
 end
 
 set :bind, '0.0.0.0'
 set :port, ENV['COMMENTS_PORT']
 
 get '/comments/:blog/:post_key' do
-  blog = params[:blog]
+  blog_key = params[:blog_key]
   post_key = params[:post_key]
   results = []
-  db.execute("select * from comments where blog = ? and post_key = ? and visible = 1 order by timestamp", [blog, post_key]) do |row|
+  db.execute("select * from comments where blog_key = ? and post_key = ? and visible = 1 order by timestamp", [blog_key, post_key]) do |row|
     results.push({
       :name => row[3],
       :timestamp => row[5],
@@ -36,7 +36,7 @@ post '/comments' do
     db.execute("update comments set visible = 1 where secret = ?", secret)
     return "Comment confirmed"
   else
-    blog = params[:blog]
+    blog_key = params[:blog_key]
     post_key = params[:post_key]
     email = params[:email]
     name = params[:name]
@@ -44,8 +44,8 @@ post '/comments' do
     timestamp = Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")
     secret = SecureRandom.hex
     db.execute(
-      "insert into comments (blog, timestamp,email,body,post_key,name,secret,visible) values (?,?,?,?,?,?,0)",
-      [blog, timestamp, email, body, post_key, name, secret]
+      "insert into comments (blog_key, timestamp,email,body,post_key,name,secret,visible) values (?,?,?,?,?,?,0)",
+      [blog_key, timestamp, email, body, post_key, name, secret]
     )
     Pony.mail(
       :to => email,
