@@ -12,7 +12,7 @@ else
 end
 
 set :bind, '0.0.0.0'
-set :port, 7777
+set :port, ENV['COMMENTS_PORT']
 
 get '/comments/:blog/:post_key' do
   blog = params[:blog]
@@ -49,7 +49,7 @@ post '/comments' do
     )
     Pony.mail(
       :to => email,
-      :from => "noreply@evanr.info",
+      :from => ENV['COMMENTS_FROM_ADDRESS'],
       :subject => "Please confirm your submitted blog comment",
       :body => <<-EOT
 <p>Greetings from the Ad Hoc Blog Comment System,</p>
@@ -63,7 +63,7 @@ the confirmation button below.
 If you think this email was sent to you in error please ignore it.
 </p>
 
-<form action="http://evanr.info:4567/comments" method="POST">
+<form action="#{ENV['COMMENTS_CALLBACK_URL']}/comments" method="POST">
 <button type="submit" name="secret" value="#{secret}">Confirm Comment</button>
 </form>
 EOT
