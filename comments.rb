@@ -46,21 +46,31 @@ end
 
 post '/comments' do
   if request.content_type == 'application/json'
-    params = JSON.parse(request.body.read)
+    json = JSON.parse(request.body.read)
+    is_bot = json['is_bot']
+    secret = json['secret']
+    return if is_bot
+    blog_key = json['blog_key']
+    post_key = json['post_key']
+    email = json['email']
+    name = json['name']
+    body = json['body']
+  else
+    is_bot = params[:is_bot]
+    secret = params[:secret]
+    return if is_bot
+    blog_key = params[:blog_key]
+    post_key = params[:post_key]
+    email = params[:email]
+    name = params[:name]
+    body = params[:body]
   end
-  is_bot = params['is_bot']
-  secret = params['secret']
-  return if is_bot
+
   if secret
     db.execute("update comments set visible = 1 where secret = ?", secret)
     headers "Content-Type" => "text/plain"
     return "Comment confirmed"
   else
-    blog_key = params['blog_key']
-    post_key = params['post_key']
-    email = params['email']
-    name = params['name']
-    body = params['body']
     timestamp = Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")
     secret = SecureRandom.hex
     db.execute(
