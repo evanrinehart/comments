@@ -4,6 +4,7 @@ require 'json'
 require 'securerandom'
 require 'pony'
 require 'digest'
+require 'time'
 
 def gravatar email
   hash = Digest::MD5.hexdigest(email.strip.downcase)
@@ -36,6 +37,7 @@ get '/comments/:blog_key/:post_key' do
       :name => row[0],
       :avatar_url => gravatar(row[1]),
       :timestamp => row[2],
+      :formatted_date => Date.parse(row[2])strftime("%b %d %Y"),
       :body => row[3]
     })
   end
