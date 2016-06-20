@@ -3,6 +3,12 @@ require 'sqlite3'
 require 'json'
 require 'securerandom'
 require 'pony'
+require 'digest'
+
+def gravatar email
+  hash = Digest::MD5.hexdigest(email.strip.downcase)
+  "http://www.gravatar.com/avatar/#{hash}?s=40"
+end
 
 if File.exists? "comments.db"
   db = SQLite3::Database.new "comments.db"
@@ -24,22 +30,29 @@ get '/comments/:blog_key/:post_key' do
   blog_key = params[:blog_key]
   post_key = params[:post_key]
   results = []
-  db.execute("select name, timestamp, body from comments where blog_key = ? and post_key = ? and visible = 1 order by timestamp", [blog_key, post_key]) do |row|
+  db.execute("select name, email, timestamp, body from comments where blog_key = ? and post_key = ? and visible = 1 order by timestamp", [blog_key, post_key]) do |row|
     results.push({
       :name => row[0],
-      :timestamp => row[1],
-      :body => row[2]
+      :avatar_url => gravatar(row[1]),
+      :timestamp => row[2],
+      :body => row[3]
     })
   end
+  headers "Access-Control-Allow-Origin" => "*"
+  headers "Content-Type" => "application/json"
   return JSON.generate(results)
 end
 
 post '/comments' do
+  if request.content_type == 'application/json'
+    params = JSON.parse(request.body.read)
+  end
   is_bot = params[:is_bot]
   secret = params[:secret]
   return if is_bot
   if secret
     db.execute("update comments set visible = 1 where secret = ?", secret)
+    headers "Content-Type" => "text/plain"
     return "Comment confirmed"
   else
     blog_key = params[:blog_key]
@@ -96,6 +109,7 @@ EOT
         logs.close
       end
     end
+    headers "Content-Type" => "text/plain"
     return "Look for an email to confirm your comment"
   end
 end
