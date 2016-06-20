@@ -25,6 +25,7 @@ end
 
 set :bind, '0.0.0.0'
 set :port, ENV['COMMENTS_PORT']
+set :protection, :except => [:json_csrf]
 
 get '/comments/:blog_key/:post_key' do
   blog_key = params[:blog_key]
